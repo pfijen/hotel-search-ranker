@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "achmea"
+version = "1.0"
+description = "This repo contains the code to create a simple LightGBM model to rank hotel searches. This model is built upon Expedia data from a kaggle competition."
+authors = ["Paulo"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+lightgbm = "*"
+shap = "^0.36.0"
+
+[tool.poetry.dev-dependencies]
+pandas = "^1.1.3"
+numpy = "^1.19.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
