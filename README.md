@@ -5,7 +5,8 @@ The original competition can be found here: <https://www.kaggle.com/c/expedia-pe
 
 ---
 
-#### Dependencies:
+#### Dependencies
+Packages are managed with poetry. (<https://python-poetry.org/docs/>)
 `python ^3.7`
 
 `pandas ^1.1`
