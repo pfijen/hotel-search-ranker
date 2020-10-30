@@ -1,7 +1,7 @@
+# %%
 import lightgbm as lgbm
 import numpy as np
 import shap
-from IPython.display import display
 from lightgbm.basic import Dataset
 from pandas import DataFrame, Series
 
@@ -18,17 +18,17 @@ class Recommender(object):
             "ndcg_at": 5,
             "boosting": "gbdt",
             "num_threads": 4,
-            "max_leaves": 50,
+            "zero_as_missing": True,
+            "seed": 2,
+            "label_gain": [0, 1, 2, 3, 4, 5],
+            "verbose": 1,
+            "ignore_column": 0,
+            # -------------
             "bagging_fraction": 0.85,
             "bagging_freq": 5,
             "feature_fraction": 0.95,
             "learning_rate": 0.15,
-            "verbose": 1,
             "min_data_in_leaf": 25,
-            "ignore_column": 0,
-            "label_gain": [0, 1, 2, 3, 4, 5],
-            "zero_as_missing": True,
-            "seed": 2,
         }
         pass
 
@@ -53,8 +53,6 @@ class Recommender(object):
             num_boost_round=100,
             early_stopping_rounds=10,
         )
-        display(lgbm.plot_metric(self.model))
-        lgbm.plot_metric(self.model)
         pass
 
     def predict(self, df: DataFrame) -> DataFrame:
@@ -112,3 +110,6 @@ class Recommender(object):
         if not idcg:
             return 1.0
         return self._dcg_at_k(r, k) / idcg
+
+
+# %%

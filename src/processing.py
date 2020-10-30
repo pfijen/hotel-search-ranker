@@ -1,3 +1,4 @@
+# %%
 from typing import Tuple
 
 import numpy as np
@@ -111,7 +112,7 @@ class Processor(object):
         Returns:
             pd.DataFrame: Bookings with np.nan's
         """
-        self.logger.info("\tFilling Zeros with NaNs")
+        self.logger.info("\tFilling zeros with NaNs")
         fill_names = [
             "prop_starrating",
             "prop_review_score",
@@ -128,3 +129,6 @@ class Processor(object):
         split1 = srches[round(len(srches) * train_size)]
         split2 = srches[round(len(srches) * (train_size + val_size))]
         return split1, split2
+
+
+# %%
