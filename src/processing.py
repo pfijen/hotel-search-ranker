@@ -17,17 +17,24 @@ class Processor(object):
         df = pd.read_csv(path, sep=",")
         return df
 
+    def save_data(self, df, path: str, nrows: int) -> None:
+        self.logger.info(f"Writing data sample of size {nrows} to {path}")
+        df[:nrows].to_csv(path, index=False)
+        pass
+
     def process(self, df) -> pd.DataFrame:
         """DataFrame processing pipeline of basic operations"""
         self.logger.info("Processing the data")
         df_processed = (
-            df.pipe(self._parse_dates).pipe(self._drop_cols).pipe(self._fill_zeros)
+            df.pipe(self._parse_dates)
+            .pipe(self._drop_cols_logic)
+            .pipe(self._fill_zeros)
         )
         self.logger.info("Processing finished")
         return df_processed
 
     def split_data(
-        self, df, train_size: float = 0.6, val_size: float = 0.2
+        self, df, train_size: float = 0.7, val_size: float = 0.2
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """Create datasets for train, val, test
         Full dataset contains 200k searches,
@@ -63,10 +70,12 @@ class Processor(object):
         """Split the dataframe into X and y
         In the original kaggle competition the bookings had
         a weight of 4 and clicks of 1 for the ndcg_at_k metric
+        These weights are handled in the xgb model
+        by setting the label_gain
         """
         self.logger.info("Splitting DataFrame into X, y")
         y = df["srch_id"].to_frame()
-        y = y.assign(r=df["click_bool"].add(df["booking_bool"] * 4))
+        y = y.assign(r=df["click_bool"].add(df["booking_bool"]))
         y = y.drop(columns=["srch_id"])["r"]
 
         X = df.drop(columns=["click_bool", "booking_bool"])
@@ -86,21 +95,34 @@ class Processor(object):
         )
         return df_parsed
 
-    def _drop_cols(self, df) -> pd.DataFrame:
+    def _drop_cols_logic(self, df) -> pd.DataFrame:
         """The competition belonging to this data
         has a formal test set which does not contain
         the position or gross booking.
         Kaggle Expedia reccommender competition.
+        """
+        self.logger.info("\tdropping columns not usable")
+
+        drop_list = ["date_time", "position", "gross_bookings_usd"]
+        df_dropped = df.drop(columns=drop_list)
+        return df_dropped
+
+    def _drop_cols_comp(self, df) -> pd.DataFrame:
+        """The competitor columns have no added value
+        in predictive performance and are half of the
+        columns
 
         The second set of columns is dropped to
         reduce dimensionality without a major
         loss in performance. This saves training
         time and makes shap faster.
         """
-        self.logger.info("\tdropping columns")
-        drop_list = ["date_time", "position", "gross_bookings_usd"]
-        df_dropped = df.drop(columns=drop_list)
-        return df_dropped
+        self.logger.info("\tdropping columns competitors")
+
+        for col in df.columns:
+            if col.startswith("comp"):
+                df = df.drop(columns=col)
+        return df
 
     def _fill_zeros(self, df) -> pd.DataFrame:
         """By defenition the zeros represent missing values
@@ -108,11 +130,11 @@ class Processor(object):
 
         Args:
             df (DataFrame): Bookings
-
         Returns:
             pd.DataFrame: Bookings with np.nan's
         """
         self.logger.info("\tFilling zeros with NaNs")
+
         fill_names = [
             "prop_starrating",
             "prop_review_score",

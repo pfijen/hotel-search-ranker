@@ -11,19 +11,20 @@ class Recommender(object):
 
     def __init__(self, logger) -> None:
         self.logger = logger
-        self.model: lgbm.Booster
         self.parameters = {
+            # fixed params
             "objective": "lambdarank",
             "metric": "ndcg",
             "ndcg_at": 5,
             "boosting": "gbdt",
-            "num_threads": 4,
+            "num_threads": 2,
+            "force_row_wise": True,
             "zero_as_missing": True,
             "seed": 2,
-            "label_gain": [0, 1, 2, 3, 4, 5],
+            "label_gain": [0, 1, 5],  # weights for ndcg metric
             "verbose": 1,
-            "ignore_column": 0,
-            # -------------
+            "ignore_column": 0,  # column 0 specifies the search_id
+            # hyperparams below
             "bagging_fraction": 0.85,
             "bagging_freq": 5,
             "feature_fraction": 0.95,
@@ -45,14 +46,25 @@ class Recommender(object):
         return lgbm_dataset
 
     def fit(self, lgbm_train: Dataset, lgbm_val: Dataset) -> None:
-        """Train the model with class parameters"""
+        """Train the model with class parameters and store model"""
         self.model = lgbm.train(
             params=self.parameters,
             train_set=lgbm_train,
             valid_sets=lgbm_val,
-            num_boost_round=100,
+            num_boost_round=20,
             early_stopping_rounds=10,
         )
+        
+        text_file = open("model/lgbm.txt", "w")
+        text_file.write(self.model.model_to_string())
+        text_file.close()
+        self.logger.info("Saved model to model/ dir")
+        pass
+
+    def load(self, path: str) -> None:
+        """Load pre trained model from model dir"""
+        lgbm_str = open(path, 'r').read()
+        self.model = lgbm.Booster(model_str=lgbm_str)
         pass
 
     def predict(self, df: DataFrame) -> DataFrame:
@@ -81,17 +93,24 @@ class Recommender(object):
         self.logger.info(f"NDCG@5 performance on test set {np.mean(score)}")
         pass
 
-    def explain(self, X: DataFrame) -> None:
+    def explain(self, X: DataFrame, nrows: int) -> None:
         """SHAP is an innovative method to explain complex ML models
-        Works on a global level like in this case
-        As well as for individual predictions
+        Works on a global model level like in this case
+        SHAP also works for explaining individual predictions
         """
-        self.logger.info("Creating global model explainability plot")
+        self.logger.info("Calculating SHAP values for explainibility")
         explainer = shap.TreeExplainer(self.model)
-        self._shap_values = explainer.shap_values(X.values)
+        self._shap_values = explainer.shap_values(X[:nrows].values)
+        np.save('model/shap_values.npy', self._shap_values)
+        print(self._shap_values)
+        pass
+
+    def plot_shap(self, shap_values_path: str, X: DataFrame, nrows=10000):
+        self.logger.info("Creating global model explainability plot")
+        
         shap.summary_plot(
-            self._shap_values,
-            X,
+            shap_values=self._shap_values,
+            features=X[:nrows],
         )
         pass
 
