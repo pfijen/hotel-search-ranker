@@ -102,12 +102,11 @@ class Recommender(object):
         explainer = shap.TreeExplainer(self.model)
         self._shap_values = explainer.shap_values(X[:nrows].values)
         np.save('model/shap_values.npy', self._shap_values)
-        print(self._shap_values)
         pass
 
     def plot_shap(self, shap_values_path: str, X: DataFrame, nrows=10000):
         self.logger.info("Creating global model explainability plot")
-        
+        self._shap_values = np.load(shap_values_path)
         shap.summary_plot(
             shap_values=self._shap_values,
             features=X[:nrows],
