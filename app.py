@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import lightgbm as lgbm
-import shap
 
 def load_data(nrows):
     data = pd.read_csv('data/stored/X_test_sample.csv', nrows=nrows)
