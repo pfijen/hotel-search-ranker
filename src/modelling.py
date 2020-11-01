@@ -52,7 +52,7 @@ class Recommender(object):
     def anomaly_score(
         self, cols, X_train, X_val, X_test
     ) -> Tuple[DataFrame, DataFrame, DataFrame]:
-        """Isolation forest is an unsupervised ML method which calulates 
+        """Isolation forest is an unsupervised ML method which calulates
         an anomaly score of a datapoint for feature engineering.
         In this usage the forest is fitted on train and anomaly
         scores are determined for train, val, test
@@ -71,7 +71,6 @@ class Recommender(object):
         self.logger.info("Anomaly scores appended")
         return X_train, X_val, X_test
 
-
     def fit(self, lgbm_train: Dataset, lgbm_val: Dataset) -> None:
         """Train the model with class parameters and store model
         Hyperparameters are sub optimal and efficientcy is prioritzed
@@ -83,7 +82,7 @@ class Recommender(object):
             num_boost_round=100,
             early_stopping_rounds=10,
         )
-        
+
         text_file = open("model/lgbm.txt", "w")
         text_file.write(self.model.model_to_string())
         text_file.close()
@@ -92,7 +91,7 @@ class Recommender(object):
 
     def load(self, path: str) -> None:
         """Load pre trained model from model dir"""
-        lgbm_str = open(path, 'r').read()
+        lgbm_str = open(path, "r").read()
         self.model = lgbm.Booster(model_str=lgbm_str)
         pass
 
@@ -130,7 +129,7 @@ class Recommender(object):
         self.logger.info("Calculating SHAP values for explainibility")
         explainer = shap.TreeExplainer(self.model)
         self._shap_values = explainer.shap_values(X[:nrows].values)
-        np.save('model/shap_values.npy', self._shap_values)
+        np.save("model/shap_values.npy", self._shap_values)
         pass
 
     def plot_shap(self, shap_values_path: str, X: DataFrame, nrows=10000):
@@ -147,7 +146,8 @@ class Recommender(object):
         r = np.asfarray(r)[:k]
         if r.size:
             return np.sum(
-                np.subtract(np.power(2, r), 1) / np.log2(np.arange(2, r.size + 2))
+                np.subtract(np.power(2, r), 1) /
+                np.log2(np.arange(2, r.size + 2))
             )
         return 0.0
 
@@ -157,6 +157,3 @@ class Recommender(object):
         if not idcg:
             return 1.0
         return self._dcg_at_k(r, k) / idcg
-
-
-# %%

@@ -48,9 +48,9 @@ class Processor(object):
 
         Returns:
             Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: [
-                Train set containing first 65% (if default),
-                Validation set containing next 15% (if default),
-                Test set containing remaining data (20% default)
+                Train set containing first 70% (if default),
+                Validation set containing next 20% (if default),
+                Test set containing remaining data (10% default)
             ]
         """
         self.logger.info("Splitting into train, val, test")
@@ -85,9 +85,13 @@ class Processor(object):
     def numeric_and_complete_cols(self, df) -> List[str]:
         """create a list of columns which are complete and numeric"""
         missing_values = df.isna().sum()
-        no_missing = missing_values[missing_values==0]
-        l = [x for x in no_missing.index if (not x.endswith('id')) and (not x.endswith('bool'))]
-        return l
+        no_missing = missing_values[missing_values == 0]
+        col_list = [
+            x
+            for x in no_missing.index
+            if not x.endswith("id") and not x.endswith("bool")
+        ]
+        return col_list
 
     def _parse_dates(self, df) -> pd.DataFrame:
         """Transforms string to datetime object
@@ -133,13 +137,8 @@ class Processor(object):
         return df
 
     def _fill_zeros(self, df) -> pd.DataFrame:
-        """By defenition the zeros represent missing values
+        """By defenition the zeros represent missing values in this dataset
         This functions replaces the zeros with np.nan
-
-        Args:
-            df (DataFrame): Bookings
-        Returns:
-            pd.DataFrame: Bookings with np.nan's
         """
         self.logger.info("\tFilling zeros with NaNs")
 
@@ -159,6 +158,3 @@ class Processor(object):
         split1 = srches[round(len(srches) * train_size)]
         split2 = srches[round(len(srches) * (train_size + val_size))]
         return split1, split2
-
-
-# %%

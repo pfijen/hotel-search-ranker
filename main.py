@@ -8,7 +8,7 @@ logging.basicConfig(
     format="[%(levelname)s %(asctime)s] - %(message)s", level=logging.INFO
 )
 
-if __name__=='__main__':
+if __name__ == "__main__":
 
     logger = logging.getLogger()
     data = Processor(logger)
@@ -50,9 +50,9 @@ if __name__=='__main__':
     model.score(X_test_predicted, y_test)
 
     # Use SHAP to explain our gradient boosting tree
-    # NOTE: if the stored model is loaded the explainer
-    # does not work, to be fixed. (probably since model object is missing)
+    # NOTE: if the stored model is loaded the explainer does not work,
+    # probably since model object is missing, to be fixed.
     model.explain(X_test, nrows=10000)
-    model.plot_shap(shap_values_path='model/shap_values.npy', X=X_test)
+    model.plot_shap(shap_values_path="model/shap_values.npy", X=X_test)
 
     logger.info("Program terminated")
