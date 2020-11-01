@@ -136,7 +136,7 @@ st.write('rank score is: ', output[0])
 st.write('local interpretation will be added later ;) an impression of what to expect below')
 st.image('plots/SHAP_ex.png')
 
-st.title('Global model Interpretation')
+st.write('Global model Interpretation')
 st.image('plots/SHAP.png')
 
 
