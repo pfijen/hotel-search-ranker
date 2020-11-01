@@ -142,5 +142,5 @@ cython_debug/
 .DS_store
 
 # data & model dir
-data/
-model/
+data/input/
+model/shap_values.npy
