@@ -3,6 +3,8 @@ This repo contains the code to create a simple LightGBM model to rank hotel sear
 
 The original competition can be found here: <https://www.kaggle.com/c/expedia-personalized-sort>
 
+
+TODO: deploy app in heroku
 ---
 
 #### Dependencies
