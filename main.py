@@ -17,9 +17,8 @@ if __name__ == "__main__":
     df = data.read_data("data/input/bookings.csv")
     df_processed = data.process(df)
 
-    # Split data in 3 sets (70/20/10%) and store test sample
+    # Split data in 3 sets (70/20/10%)
     df_train, df_val, df_test = data.split_data(df_processed)
-    # data.save_data(df_test, path="data/stored/test_sample.csv", nrows=10000)
 
     X_train, y_train = data.split_Xy(df_train)
     X_val, y_val = data.split_Xy(df_val)
@@ -33,6 +32,9 @@ if __name__ == "__main__":
     X_train, X_val, X_test = model.anomaly_score(
         on_columns, X_train, X_val, X_test
     )
+
+    # NOTE: only for convienience to load into streamlit
+    data.save_data(X_test, path="data/stored/X_test_sample.csv", nrows=10000)
 
     # Transform X data to LightGBM Dataset format
     train_data = model.pandas_to_lgbm(X_train, y_train)

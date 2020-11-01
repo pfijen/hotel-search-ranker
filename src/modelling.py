@@ -68,7 +68,7 @@ class Recommender(object):
         X_train = X_train.assign(anomaly=od.score_samples(X_train_reduced))
         X_val = X_val.assign(anomaly=od.score_samples(X_val_reduced))
         X_test = X_test.assign(anomaly=od.score_samples(X_test_reduced))
-        self.logger.info("Anomaly scores appended")
+        self.logger.info(f"Anomaly scores appended, mean: {X_train['anomaly'].mean()}")
         return X_train, X_val, X_test
 
     def fit(self, lgbm_train: Dataset, lgbm_val: Dataset) -> None:

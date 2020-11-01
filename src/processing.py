@@ -26,7 +26,8 @@ class Processor(object):
         """DataFrame processing pipeline of basic operations"""
         self.logger.info("Processing the data")
         df_processed = (
-            df.pipe(self._parse_dates)
+            df
+            .pipe(self._parse_dates)
             .pipe(self._drop_cols_logic)
             .pipe(self._drop_cols_comp)
             .pipe(self._fill_zeros)
@@ -103,7 +104,6 @@ class Processor(object):
         df_parsed = df_dt.assign(
             day_of_week=df_dt["date_time"].dt.dayofweek + 1,
             month=df_dt["date_time"].dt.month,
-            quarter=df_dt["date_time"].dt.quarter,
         )
         return df_parsed
 
