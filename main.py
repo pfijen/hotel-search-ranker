@@ -19,7 +19,7 @@ if __name__=='__main__':
 
     # Split data in 3 sets (70/20/10%) and store test sample
     df_train, df_val, df_test = data.split_data(df_processed)
-    data.save_data(df_test, path="data/stored/test_sample.csv", nrows=10000)
+    # data.save_data(df_test, path="data/stored/test_sample.csv", nrows=10000)
 
     X_train, y_train = data.split_Xy(df_train)
     X_val, y_val = data.split_Xy(df_val)
