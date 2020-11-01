@@ -133,8 +133,6 @@ model = load_model(path="model/lgbm.txt")
 output = model.predict(pd.DataFrame(input_list).T)
 st.write('rank score is: ', output[0])
 
-shap_values = np.load('model/shap_values.npy')
-
 st.write('local interpretation will be added later ;) an impression of what to expect below')
 st.image('plots/SHAP_ex.png')
 
