@@ -1,47 +1,58 @@
-# %%
 import logging
 
 from src.modelling import Recommender
 from src.processing import Processor
 
+# Configurate logger format
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s] - %(message)s", level=logging.INFO
 )
 
-# %%
-logger = logging.getLogger()
-data = Processor(logger)
+if __name__=='__main__':
 
-df = data.read_data("data/input/bookings.csv")
-df_processed = data.process(df)
-df_train, df_val, df_test = data.split_data(df_processed)
-data.save_data(df_test, path="data/stored/test_sample.csv", nrows=10000)
+    logger = logging.getLogger()
+    data = Processor(logger)
 
-X_train, y_train = data.split_Xy(df_train)
-X_val, y_val = data.split_Xy(df_val)
-X_test, y_test = data.split_Xy(df_test)
+    # Read data and apply basic processing
+    df = data.read_data("data/input/bookings.csv")
+    df_processed = data.process(df)
 
+    # Split data in 3 sets (70/20/10%) and store test sample
+    df_train, df_val, df_test = data.split_data(df_processed)
+    data.save_data(df_test, path="data/stored/test_sample.csv", nrows=10000)
 
-# %%
-model = Recommender(logger)
+    X_train, y_train = data.split_Xy(df_train)
+    X_val, y_val = data.split_Xy(df_val)
+    X_test, y_test = data.split_Xy(df_test)
 
-on_columns = data.numeric_and_complete_cols(df_processed)
-X_train, X_val, X_test = model.anomaly_score(
-    on_columns, X_train, X_val, X_test
-)
+    model = Recommender(logger)
 
-train_data = model.pandas_to_lgbm(X_train, y_train)
-val_data = model.pandas_to_lgbm(X_val, y_val)
+    # SKlearn isolation forest only works with non-missing numerical values
+    # retrieve these columns and generate anomaly scores for the 3 datasets
+    on_columns = data.numeric_and_complete_cols(df_processed)
+    X_train, X_val, X_test = model.anomaly_score(
+        on_columns, X_train, X_val, X_test
+    )
 
-model.fit(train_data, val_data)
-#model.load(path="model/lgbm.txt")
+    # Transform X data to LightGBM Dataset format
+    train_data = model.pandas_to_lgbm(X_train, y_train)
+    val_data = model.pandas_to_lgbm(X_val, y_val)
 
-X_test_predicted = model.predict(X_test)
-model.score(X_test_predicted, y_test)
+    # Train model with a train set
+    # Use validation set for early stopping
+    model.fit(train_data, val_data)
 
-model.explain(X_test, nrows=10000)
+    # Store the model for later use
+    # model.load(path="model/lgbm.txt")
 
-model.plot_shap(shap_values_path='model/shap_values.npy', X=X_test)
-logger.info("Program terminated")
+    # Score test set and calculate metric
+    X_test_predicted = model.predict(X_test)
+    model.score(X_test_predicted, y_test)
 
-# %%
+    # Use SHAP to explain our gradient boosting tree
+    # NOTE: if the stored model is loaded the explainer
+    # does not work, to be fixed. (probably since model object is missing)
+    model.explain(X_test, nrows=10000)
+    model.plot_shap(shap_values_path='model/shap_values.npy', X=X_test)
+
+    logger.info("Program terminated")
