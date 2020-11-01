@@ -6,7 +6,9 @@ The original competition can be found here: <https://www.kaggle.com/c/expedia-pe
 ---
 
 #### Dependencies
-Packages are managed with poetry. (<https://python-poetry.org/docs/>)
+Packages required to run are listed in the `pyproject.toml` file and are managed with poetry. (<https://python-poetry.org/docs/>)
+
+For manual installation the current dependencies are:
 
 `python ^3.7`
 
