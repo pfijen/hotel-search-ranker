@@ -1,6 +1,3 @@
 build:
   docker:
-      dockerfile: Dockerfile
-      target: builder
     web: Dockerfile
-    worker Dockerfile
