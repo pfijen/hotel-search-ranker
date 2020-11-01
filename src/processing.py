@@ -1,5 +1,5 @@
 # %%
-from typing import Tuple
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -28,6 +28,7 @@ class Processor(object):
         df_processed = (
             df.pipe(self._parse_dates)
             .pipe(self._drop_cols_logic)
+            .pipe(self._drop_cols_comp)
             .pipe(self._fill_zeros)
         )
         self.logger.info("Processing finished")
@@ -80,6 +81,13 @@ class Processor(object):
 
         X = df.drop(columns=["click_bool", "booking_bool"])
         return X, y
+
+    def numeric_and_complete_cols(self, df) -> List[str]:
+        """create a list of columns which are complete and numeric"""
+        missing_values = df.isna().sum()
+        no_missing = missing_values[missing_values==0]
+        l = [x for x in no_missing.index if (not x.endswith('id')) and (not x.endswith('bool'))]
+        return l
 
     def _parse_dates(self, df) -> pd.DataFrame:
         """Transforms string to datetime object

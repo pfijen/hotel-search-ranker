@@ -1,8 +1,12 @@
 # %%
+from typing import Tuple
+from lightgbm.basic import Dataset
+
 import lightgbm as lgbm
 import numpy as np
 import shap
-from lightgbm.basic import Dataset
+
+from sklearn.ensemble import IsolationForest
 from pandas import DataFrame, Series
 
 
@@ -45,13 +49,38 @@ class Recommender(object):
         )
         return lgbm_dataset
 
+    def anomaly_score(
+        self, cols, X_train, X_val, X_test
+    ) -> Tuple[DataFrame, DataFrame, DataFrame]:
+        """Isolation forest is an unsupervised ML method which calulates 
+        an anomaly score of a datapoint for feature engineering.
+        In this usage the forest is fitted on train and anomaly
+        scores are determined for train, val, test
+        Number of trees is limited to reduce time
+        """
+        self.logger.info("Determining anomaly scores")
+        X_train_reduced = X_train[cols]
+        X_val_reduced = X_val[cols]
+        X_test_reduced = X_test[cols]
+
+        od = IsolationForest(n_estimators=10).fit(X_train_reduced)
+
+        X_train = X_train.assign(anomaly=od.score_samples(X_train_reduced))
+        X_val = X_val.assign(anomaly=od.score_samples(X_val_reduced))
+        X_test = X_test.assign(anomaly=od.score_samples(X_test_reduced))
+        self.logger.info("Anomaly scores appended")
+        return X_train, X_val, X_test
+
+
     def fit(self, lgbm_train: Dataset, lgbm_val: Dataset) -> None:
-        """Train the model with class parameters and store model"""
+        """Train the model with class parameters and store model
+        Hyperparameters are sub optimal and efficientcy is prioritzed
+        """
         self.model = lgbm.train(
             params=self.parameters,
             train_set=lgbm_train,
             valid_sets=lgbm_val,
-            num_boost_round=20,
+            num_boost_round=100,
             early_stopping_rounds=10,
         )
         
